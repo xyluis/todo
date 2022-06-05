@@ -1,45 +1,81 @@
-import { useState } from 'react'
-import logo from './logo.svg'
-import './App.css'
+import { ChangeEvent, FormEvent, useState } from 'react'
+import { PlusCircle } from 'phosphor-react'
 
-function App() {
-  const [count, setCount] = useState(0)
+import { Header } from "./components/Header";
+import { Task } from './components/Task';
 
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>Hello Vite + React!</p>
-        <p>
-          <button type="button" onClick={() => setCount((count) => count + 1)}>
-            count is: {count}
-          </button>
-        </p>
-        <p>
-          Edit <code>App.tsx</code> and save to test HMR updates.
-        </p>
-        <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-          {' | '}
-          <a
-            className="App-link"
-            href="https://vitejs.dev/guide/features.html"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Vite Docs
-          </a>
-        </p>
-      </header>
-    </div>
-  )
+import styles from './App.module.css'
+
+import clipboard from './assets/clipboard.svg';
+
+export interface TaskProps {
+  id: number
+  description: string
+  completed: boolean
 }
 
-export default App
+export function App(): JSX.Element {
+  const [newTask, setNewTask] = useState<string>('')
+  const [tasks, setTasks] = useState<TaskProps[]>([])
+
+  function handleAddNewTask (e: FormEvent) {
+    e.preventDefault()
+
+    setTasks([...tasks, { id: Math.random(), description: newTask, completed: false }])
+    setNewTask('')
+  }
+
+  function handleNewTask (e: ChangeEvent<HTMLInputElement>) {
+    e.target.setCustomValidity('')
+    setNewTask(e.target.value)
+  }
+
+  function onCustomInvalid (e: ChangeEvent<HTMLInputElement>) {
+    e.target.setCustomValidity('A descrição é obrigatória')
+  }
+
+  function handleDeleteTask (id: number) {
+    setTasks(tasks.filter(task => task.id !== id))
+  }
+
+  function handleCompleteTask (id: number) {
+    setTasks(tasks.map(task => (task.id === id ? { ...task, completed: !task.completed } : task)))
+  }
+
+  return (
+    <>
+      <Header />
+
+      <div className={styles.wrapper}>
+        <form className={styles.newTask} onSubmit={handleAddNewTask}>
+          <input type="text" placeholder="Adicione uma nova tarefa" name="description" onChange={handleNewTask} required value={newTask} onInvalid={onCustomInvalid} />
+          <button type="submit">Criar <PlusCircle size={20}/></button>
+        </form>
+
+        <div className={styles.heading}>
+          <p>Tarefas criadas <span>{tasks.length}</span></p>
+
+          <p className={styles.headingBlue}>Concluídas <span>{tasks.length ? `${tasks.filter(task => task.completed).length} de ${tasks.length}` : tasks.length}</span></p>          
+        </div>
+
+        {tasks.length ? tasks.map(task => (
+          <Task 
+            key={task.id} 
+            {...task} 
+            onDeleteTask={handleDeleteTask}
+            onCompleteTask={handleCompleteTask}
+          />
+        )) : (
+          
+          <div className={styles.noTasks}>
+            <img src={clipboard} alt="Clipboard icon" />
+            <div className={styles.noTasksTexts}>
+              <strong>Você ainda não tem tarefas cadastradas</strong>
+              <p>Crie tarefas e organize seus itens a fazer</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
