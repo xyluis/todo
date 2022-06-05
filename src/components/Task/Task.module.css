@@ -61,3 +61,9 @@
 .task input[type="checkbox"]:hover {
   border: 1px solid var(--brand-blue-500);
 }
+
+@media (max-width: 768px) {
+  .task {
+    width: 25rem;
+  }
+}

@@ -111,3 +111,9 @@
 .noTasksTexts p {
   color: var(--gray-300)
 }
+
+@media (max-width: 768px) {
+  .newTask, .heading {
+    width: 25rem;
+  }
+}
